@@ -17,11 +17,11 @@ before_build:
 
 build:
   verbosity: minimal
-  project: Alethic.KadKey.sln
+  project: Alethic.KeyShift.sln
 
 artifacts:
   - path: pkg\*.nupkg
-    name: Alethic.KadKey
+    name: Alethic.KeyShift
 
 deploy:
   provider: NuGet

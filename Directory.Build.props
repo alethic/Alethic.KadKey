@@ -2,10 +2,10 @@
     <PropertyGroup>
         <Authors>Jerome Haltom</Authors>
         <Company>Alethic Solutions</Company>
-        <RepositoryUrl>https://github.com/alethic/Alethic.KadKey</RepositoryUrl>
+        <RepositoryUrl>https://github.com/alethic/Alethic.KeyShift</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>kademlia kvs dht</PackageTags>
-        <PackageProjectUrl>https://github.com/alethic/Alethic.KadKey</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/alethic/Alethic.KeyShift</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>icon.png</PackageIcon>
         <LangVersion>8.0</LangVersion>
