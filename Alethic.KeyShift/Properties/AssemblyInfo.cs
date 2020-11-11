@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Alethic.KadKey.Tests")]
+[assembly: InternalsVisibleTo("Alethic.KeyShift.Tests")]

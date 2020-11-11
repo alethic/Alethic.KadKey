@@ -1,12 +1,11 @@
 {
-    "profiles": {
-        "Alethic.KadKey.Console": {
-            "commandName": "Project",
-            "launchBrowser": true,
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "applicationUrl": "https://localhost:5001;http://localhost:5000"
-        }
+  "profiles": {
+    "Alethic.KadKey.Console": {
+      "commandName": "Project",
+      "commandLineArgs": "Alethic.KeyShift:KeyStore=http://localhost:5000/keys",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
+  }
 }

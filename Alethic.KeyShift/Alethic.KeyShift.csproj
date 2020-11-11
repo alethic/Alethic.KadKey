@@ -8,9 +8,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Cogito.Kademlia" Version="0.2.0-alpha0074" />
-      <PackageReference Include="Cogito.Kademlia.InMemory" Version="0.2.0-alpha0074" />
-      <PackageReference Include="Cogito.Kademlia.Protobuf" Version="0.2.0-alpha0074" />
+      <PackageReference Include="Cogito.Kademlia" Version="0.2.0-alpha0104" />
+      <PackageReference Include="Cogito.Kademlia.InMemory" Version="0.2.0-alpha0104" />
+      <PackageReference Include="Cogito.Kademlia.Json" Version="0.2.0-alpha0104" />
+      <PackageReference Include="Cogito.Kademlia.MessagePack" Version="0.2.0-alpha0104" />
+      <PackageReference Include="Cogito.Kademlia.Protobuf" Version="0.2.0-alpha0104" />
     </ItemGroup>
 
 </Project>
