@@ -12,13 +12,31 @@ namespace Alethic.KeyShift
     {
 
         /// <summary>
-        /// Gets the current value of the specified key. Ownership of the key is transfered to this host.
+        /// Gets the current data for the host as part of the shifting process, establishes a timeout for the shift to be completed.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="token"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<byte[]> Select(TKey key, Guid? token, CancellationToken cancellationToken);
+        Task<KsHostShiftLockResult> ShiftLockAsync(TKey key, string token, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Finishes the shifting process by removing host data and establishing a forward.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="token"></param>
+        /// <param name="forward"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task ShiftAsync(TKey key, string token, Uri forward, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the current value of the specified key. Ownership of the key is transfered to this host.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<byte[]> GetAsync(TKey key, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the current value of the specified key. Ownership of the key is transfered to this host.
@@ -27,27 +45,7 @@ namespace Alethic.KeyShift
         /// <param name="value"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Update(TKey key, byte[] value, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Initiates a limited time freeze on the key, causing readers and writers to block. Used to initiate a
-        /// transfer. A token that allows the completion of the transfer is returned.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<Guid> Freeze(TKey key, Guid? token, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Removes the key from the host. Invoked to finalize a transfer. 
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        /// <param name="forward"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task Remove(TKey key, Guid token, Uri forward, CancellationToken cancellationToken);
+        Task SetAsync(TKey key, byte[] value, CancellationToken cancellationToken);
 
     }
 

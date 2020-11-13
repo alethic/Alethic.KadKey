@@ -1,16 +1,17 @@
-﻿using Autofac;
+﻿using Alethic.Kademlia;
+using Alethic.Kademlia.InMemory;
+using Alethic.Kademlia.Network.Udp;
+using Alethic.Kademlia.Protobuf;
+using Alethic.KeyShift.InMemory;
+using Alethic.KeyShift.Kademlia;
+
+using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
 using Cogito.Autofac;
 using Cogito.Autofac.DependencyInjection;
 using Cogito.Extensions.Options.Autofac;
 using Cogito.Extensions.Options.Configuration.Autofac;
-using Cogito.Kademlia;
-using Cogito.Kademlia.InMemory;
-using Cogito.Kademlia.Json;
-using Cogito.Kademlia.MessagePack;
-using Cogito.Kademlia.Network.Udp;
-using Cogito.Kademlia.Protobuf;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,9 +31,7 @@ namespace Alethic.KeyShift.Console
 
         static void RegisterKademlia(ContainerBuilder builder, ulong networkId)
         {
-            builder.RegisterType<KJsonMessageFormat<KNodeId256>>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<KProtobufMessageFormat<KNodeId256>>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<KMessagePackMessageFormat<KNodeId256>>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<KRefresher<KNodeId256>>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<KConnector<KNodeId256>>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<KInvoker<KNodeId256>>().AsImplementedInterfaces().SingleInstance();
@@ -55,8 +54,11 @@ namespace Alethic.KeyShift.Console
             builder.RegisterType<KsHostHttpClientFactory<string>>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<KsHostClientProvider<string>>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<KsHost<string>>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<KsStringHash>().AsImplementedInterfaces().SingleInstance();
-            builder.Configure<KsHostOptions>("Alethic.KeyShift:KeyStore");
+            builder.RegisterType<KsInMemoryStore<string>>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<KsKademliaHashTable<string, KNodeId256>>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<KsKademliaSha256StringHasher>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<KsKademliaSha1StringHasher>().AsImplementedInterfaces().SingleInstance();
+            builder.Configure<KsHostOptions>("Alethic.KeyShift");
         }
 
     }

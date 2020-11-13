@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Cogito.IO;
-using Cogito.Kademlia;
+using Alethic.Kademlia;
 
 using Microsoft.AspNetCore.Mvc;
 

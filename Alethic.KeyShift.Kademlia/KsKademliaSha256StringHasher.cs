@@ -1,15 +1,15 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-using Cogito.Kademlia;
+using Alethic.Kademlia;
 
-namespace Alethic.KeyShift
+namespace Alethic.KeyShift.Kademlia
 {
 
     /// <summary>
-    /// Implements <see cref="IKsHash{TKey}"/> for a string key.
+    /// Implements <see cref="IKsKademliaHasher{TKey, TNodeId}"/> for a string key.
     /// </summary>
-    public class KsStringHash : IKsHash<string>
+    public class KsKademliaSha256StringHasher : IKsKademliaHasher<string, KNodeId256>
     {
 
         readonly SHA256 sha256 = SHA256.Create();

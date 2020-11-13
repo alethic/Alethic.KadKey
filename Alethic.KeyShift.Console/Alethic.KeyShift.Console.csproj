@@ -9,7 +9,7 @@
       <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
       <PackageReference Include="Cogito.Autofac" Version="3.0.7" />
       <PackageReference Include="Cogito.Autofac.DependencyInjection" Version="3.0.7" />
-      <PackageReference Include="Cogito.Core" Version="3.1.18" />
+      <PackageReference Include="Cogito.Core" Version="3.1.30" />
       <PackageReference Include="Cogito.Extensions.Configuration.Autofac" Version="2.1.14" />
       <PackageReference Include="Cogito.Extensions.Logging.Autofac" Version="2.0.20" />
       <PackageReference Include="Cogito.Extensions.Logging.Serilog.Autofac" Version="2.0.20" />
@@ -22,6 +22,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Alethic.KeyShift.InMemory\Alethic.KeyShift.InMemory.csproj" />
+      <ProjectReference Include="..\Alethic.KeyShift.Kademlia\Alethic.KeyShift.Kademlia.csproj" />
       <ProjectReference Include="..\Alethic.KeyShift\Alethic.KeyShift.csproj" />
     </ItemGroup>
 

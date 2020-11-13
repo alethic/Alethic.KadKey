@@ -19,16 +19,7 @@ namespace Alethic.KeyShift
         /// <param name="token"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<byte[]> Select(TKey key, Guid? token, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Freezes the data on the remote client.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<Guid> Freeze(TKey key, Guid? token, CancellationToken cancellationToken = default);
+        Task<KsHostShiftLockResult> GetAsync(TKey key, string token, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes the data from the remote client.
@@ -38,7 +29,7 @@ namespace Alethic.KeyShift
         /// <param name="forward"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task Remove(TKey key, Guid? token, Uri forward, CancellationToken cancellationToken = default);
+        Task ForwardAsync(TKey key, string token, Uri forward, CancellationToken cancellationToken = default);
 
     }
 

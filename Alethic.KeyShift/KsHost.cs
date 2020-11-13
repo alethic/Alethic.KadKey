@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Cogito.Kademlia;
-using Cogito.Threading;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,102 +17,35 @@ namespace Alethic.KeyShift
     public class KsHost<TKey> : IKsHost<TKey>
     {
 
-        /// <summary>
-        /// Entry of the service locator within the DHT.
-        /// </summary>
-        class DhtEntry
-        {
-
-            /// <summary>
-            /// Services URIs that are the current primary and secondaries of the key data.
-            /// </summary>
-            public Uri[] Uri { get; set; }
-
-        }
-
-        /// <summary>
-        /// Entry of the data within the store.
-        /// </summary>
-        class KeyEntry
-        {
-
-            /// <summary>
-            /// Real data of the key.
-            /// </summary>
-            public byte[] Data { get; set; }
-
-            /// <summary>
-            /// Lock established during freeze.
-            /// </summary>
-            public Task Lock { get; set; }
-
-            /// <summary>
-            /// Cancels any outstanding lock.
-            /// </summary>
-            public CancellationTokenSource LockCancel { get; internal set; }
-
-            /// <summary>
-            /// Associated lock token.
-            /// </summary>
-            public Guid? LockToken { get; set; }
-
-            /// <summary>
-            /// Associated lock token of the peer.
-            /// </summary>
-            public Guid? PeerLockToken { get; set; }
-
-            /// <summary>
-            /// New destination of the key.
-            /// </summary>
-            public Uri To { get; internal set; }
-
-        }
-
         readonly IOptions<KsHostOptions> options;
-        readonly IKsHash<TKey> hash;
+        readonly IKsStore<TKey> store;
         readonly IKsHostClientProvider<TKey> clients;
-        readonly IKPublisher<KNodeId256> publisher;
-        readonly IKValueAccessor<KNodeId256> values;
-        readonly HttpClient http;
+        readonly IKsHashTable<TKey> hashtable;
         readonly ILogger logger;
-
-        readonly ConcurrentDictionary<TKey, AsyncLock> syncs = new ConcurrentDictionary<TKey, AsyncLock>();
-        readonly ConcurrentDictionary<TKey, KeyEntry> data = new ConcurrentDictionary<TKey, KeyEntry>();
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
         /// <param name="options"></param>
-        /// <param name="hash"></param>
+        /// <param name="store"></param>
+        /// <param name="hashtable"></param>
         /// <param name="clients"></param>
-        /// <param name="values"></param>
-        /// <param name="publisher"></param>
-        /// <param name="http"></param>
         /// <param name="logger"></param>
-        public KsHost(IOptions<KsHostOptions> options, IKsHash<TKey> hash, IKsHostClientProvider<TKey> clients, IKPublisher<KNodeId256> publisher, IKValueAccessor<KNodeId256> values, HttpClient http, ILogger logger)
+        public KsHost(IOptions<KsHostOptions> options, IKsStore<TKey> store, IKsHashTable<TKey> hashtable, IKsHostClientProvider<TKey> clients, ILogger logger)
         {
             this.options = options ?? throw new ArgumentNullException(nameof(options));
-            this.hash = hash ?? throw new ArgumentNullException(nameof(hash));
+            this.store = store ?? throw new ArgumentNullException(nameof(store));
+            this.hashtable = hashtable ?? throw new ArgumentNullException(nameof(hashtable));
             this.clients = clients ?? throw new ArgumentNullException(nameof(clients));
-            this.publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
-            this.values = values ?? throw new ArgumentNullException(nameof(values));
-            this.http = http ?? throw new ArgumentNullException(nameof(http));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-
-        /// <summary>
-        /// Generates a node ID for the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        KNodeId256 Hash(TKey key) => hash.Hash(key);
 
         /// <summary>
         /// Serializes the entry information.
         /// </summary>
         /// <param name="entry"></param>
         /// <returns></returns>
-        byte[] Serialize(DhtEntry entry)
+        byte[] Serialize(KsHashTableEntry entry)
         {
             return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(entry));
         }
@@ -127,38 +55,22 @@ namespace Alethic.KeyShift
         /// </summary>
         /// <param name="entry"></param>
         /// <returns></returns>
-        DhtEntry Deserialize(byte[] data)
+        KsHashTableEntry Deserialize(byte[] data)
         {
-            return JsonConvert.DeserializeObject<DhtEntry>(Encoding.UTF8.GetString(data));
-        }
-
-        /// <summary>
-        /// Gets the synchronization lock for the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<IDisposable> Sync(TKey key, CancellationToken cancellationToken)
-        {
-            return syncs.GetOrAdd(key, k => new AsyncLock()).LockAsync(cancellationToken);
+            return JsonConvert.DeserializeObject<KsHashTableEntry>(Encoding.UTF8.GetString(data));
         }
 
         /// <summary>
         /// Transfers the data with the key and entry to the local store.
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="entry"></param>
         /// <param name="value"></param>
         /// <param name="dht"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        async Task TransferAsync(TKey key, KValueInfo value, DhtEntry dht, CancellationToken cancellationToken)
+        async Task TransferAsync(IKsStoreEntry<TKey> entry, KsHashTableValue value, KsHashTableEntry dht, CancellationToken cancellationToken)
         {
-            // check if we already own the entry
-            var val = data.GetOrAdd(key, _ => new KeyEntry());
-            if (val.Data != null)
-                return;
-
-            foreach (var uri in dht.Uri)
+            foreach (var uri in dht.Endpoints)
             {
                 // we can't pull the value from ourselves, move to secondaries
                 if (uri == options.Value.Uri)
@@ -168,27 +80,39 @@ namespace Alethic.KeyShift
                 if (client == null)
                     throw new KsException($"Could not obtain client for remote host: '{uri}'");
 
-                // attempt to freeze remote entry and acquire token
-                val.PeerLockToken = await client.Freeze(key, val.PeerLockToken, cancellationToken);
+                // existing token if we're resuming an operation after failure
+                var t = await entry.GetOwnerTokenAsync(cancellationToken);
 
-                // retrieve existing value
-                val.Data = await client.Select(key, val.PeerLockToken, cancellationToken);
-                val.Lock = null;
-                val.LockToken = null;
-                val.To = null;
+                // trace down current owner
+                var v = await client.GetAsync(entry.Key, t, cancellationToken);
+                while (v.ForwardUri != null)
+                {
+                    client = clients.Get(v.ForwardUri);
+                    v = await client.GetAsync(entry.Key, t, cancellationToken);
+                }
+
+                if (v.Data == null)
+                    throw new KsException("Data not retrieved.");
+                if (v.Token == null)
+                    throw new KsException("Data retrieved, but not token.");
+
+                // update local entry with latest information
+                await entry.SetOwnerTokenAsync(t = v.Token);
+                await entry.SetAsync(v.Data);
 
                 // update DHT with new version
                 // TODO establish secondaries
-                dht.Uri = new[] { options.Value.Uri };
-                await publisher.AddAsync(Hash(key), new KValueInfo(Serialize(dht), value.Version + 1, DateTime.UtcNow.AddMinutes(60)));
+                await hashtable.AddAsync(entry.Key, new KsHashTableValue(Serialize(new KsHashTableEntry(new[] { options.Value.Uri })), value.Version + 1, TimeSpan.FromMinutes(60)));
 
                 // signal remote node to remove value and forward
-                await client.Remove(key, val.PeerLockToken, options.Value.Uri);
-                val.PeerLockToken = null;
+                await client.ForwardAsync(entry.Key, t, options.Value.Uri, cancellationToken);
 
                 // we succeeded, exit loop
                 break;
             }
+
+            // zero out lock token if we successfully complete process
+            await entry.SetOwnerTokenAsync(null);
         }
 
         /// <summary>
@@ -196,44 +120,50 @@ namespace Alethic.KeyShift
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
-        /// <param name="token"></param>
         /// <param name="func"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        async Task<T> Access<T>(TKey key, Guid? token, Func<TKey, KeyEntry, CancellationToken, Task<T>> func, bool move, CancellationToken cancellationToken)
+        async Task<T> Access<T>(TKey key, Func<IKsStoreEntry<TKey>, CancellationToken, Task<T>> func, bool shift, CancellationToken cancellationToken)
         {
-            using (await Sync(key, cancellationToken))
+            await using var entry = await store.OpenAsync(key, cancellationToken);
+
+            var v = await hashtable.GetAsync(key, cancellationToken);
+
+            // value is unknown to the system
+            if (v == null)
             {
-                var l = data.GetOrAdd(key, k => new KeyEntry());
-                var h = Hash(key);
-                var v = await values.GetAsync(h, cancellationToken);
-
-                // value is unknown to the system
-                if (v == null)
-                {
-                    // initial publish of DHT record
-                    await publisher.AddAsync(h, new KValueInfo(Serialize(new DhtEntry() { Uri = new Uri[] { options.Value.Uri } }), 1, DateTime.UtcNow.AddDays(1)), cancellationToken);
-                    return await func(key, l, cancellationToken);
-                }
-
-                // try to transfer object until transfer succeeds
-                if (move)
-                {
-                    var e = Deserialize(v.Value.Data);
-                    while (e.Uri.Length == 0 || e.Uri[0] != options.Value.Uri)
-                    {
-                        await TransferAsync(key, v.Value, e, cancellationToken);
-                        v = await values.GetAsync(h, cancellationToken);
-                        e = Deserialize(v.Value.Data);
-                    }
-                }
-
-                // if we're currently locked, wait until lock is released
-                if (l != null && l.Lock != null && l.LockToken != token)
-                    await l.Lock;
-
-                return await func(key, l, cancellationToken);
+                // initial publish of DHT record
+                v = new KsHashTableValue(Serialize(new KsHashTableEntry(new[] { options.Value.Uri })), 1, TimeSpan.FromDays(1));
+                await hashtable.AddAsync(key, v, cancellationToken);
+                return await func(entry, cancellationToken);
             }
+
+            // try to transfer object until transfer succeeds
+            if (shift)
+            {
+                var e = Deserialize(v.Value.Data);
+                while (e.Endpoints.Length == 0 || e.Endpoints[0] != options.Value.Uri)
+                {
+                    await TransferAsync(entry, v.Value, e, cancellationToken);
+                    v = await hashtable.GetAsync(key, cancellationToken);
+                    e = Deserialize(v.Value.Data);
+                }
+            }
+
+            return await func(entry, cancellationToken);
+        }
+
+        /// <summary>
+        /// Executes the given function after ensuring ownership of the key.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="func"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task Access(TKey key, Func<IKsStoreEntry<TKey>, CancellationToken, Task> func, bool shift, CancellationToken cancellationToken)
+        {
+            return Access(key, (k, c) => { func(k, c); return Task.FromResult(true); }, shift, cancellationToken);
         }
 
         /// <summary>
@@ -241,74 +171,65 @@ namespace Alethic.KeyShift
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public Task<byte[]> Select(TKey key, Guid? token, CancellationToken cancellationToken)
+        public Task<KsHostShiftLockResult> ShiftLockAsync(TKey key, string token, CancellationToken cancellationToken)
         {
-            return Access(key, token, SelectInternal, true, cancellationToken);
+            return Access(key, (e, c) => ShiftLockAsyncImpl(e, token, c), false, cancellationToken);
         }
 
-        Task<byte[]> SelectInternal(TKey key, KeyEntry entry, CancellationToken cancellationToken)
+        async Task<KsHostShiftLockResult> ShiftLockAsyncImpl(IKsStoreEntry<TKey> entry, string token, CancellationToken cancellationToken)
         {
-            return Task.FromResult(entry.Data);
-        }
-
-        /// <summary>
-        /// Updates the value of the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="buffer"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task Update(TKey key, byte[] buffer, CancellationToken cancellationToken)
-        {
-            return Access(key, null, (k, e, c) => UpdateInternal(k, e, buffer, c), true, cancellationToken);
-        }
-
-        Task<bool> UpdateInternal(TKey key, KeyEntry entry, byte[] buffer, CancellationToken cancellationToken)
-        {
-            entry.Data = buffer;
-            return Task.FromResult(true);
-        }
-
-        /// <summary>
-        /// Places a temporary lock on modification of the value with the specified key and returns a token.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="token"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<Guid> Freeze(TKey key, Guid? token, CancellationToken cancellationToken)
-        {
-            return Access(key, token, (k, e, c) => FreezeInternal(k, e, token, c), false, cancellationToken);
-        }
-
-        Task<Guid> FreezeInternal(TKey key, KeyEntry entry, Guid? token, CancellationToken cancellationToken)
-        {
-            entry.Lock = Task.Run(async () => { await Task.Delay(TimeSpan.FromSeconds(5)); using (await Sync(key, CancellationToken.None)) { entry.Lock = null; entry.LockCancel = null; entry.LockToken = null; } return true; });
-            entry.LockCancel = new CancellationTokenSource();
-            entry.LockToken = token ?? Guid.NewGuid();
-            return Task.FromResult(entry.LockToken.Value);
+            var t = await entry.FreezeAsync(token, TimeSpan.FromSeconds(5), cancellationToken);
+            var d = await entry.GetAsync(t, cancellationToken);
+            return new KsHostShiftLockResult(t, d.Data, d.ForwardUri);
         }
 
         /// <summary>
         /// Removes the value specified by the key and token.
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="token"></param>
+        /// <param name="forwardUri"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task Remove(TKey key, Guid token, Uri forward, CancellationToken cancellationToken)
+        public Task ShiftAsync(TKey key, string token, Uri forwardUri, CancellationToken cancellationToken)
         {
-            return Access(key, token, (k, e, c) => RemoveInternal(k, e, forward, c), false, cancellationToken);
+            return Access(key, async (e, c) => await ShiftAsyncImpl(e, token, forwardUri, c), false, cancellationToken);
         }
 
-        async Task<bool> RemoveInternal(TKey key, KeyEntry entry, Uri forward, CancellationToken cancellationToken)
+        async Task ShiftAsyncImpl(IKsStoreEntry<TKey> entry, string token, Uri forwardUri, CancellationToken cancellationToken)
         {
-            await publisher.RemoveAsync(Hash(key), cancellationToken);
-            entry.Data = null;
-            entry.Lock = null;
-            entry.LockCancel?.Cancel();
-            entry.LockCancel = null;
-            entry.LockToken = null;
-            entry.To = forward;
-            return true;
+            await hashtable.RemoveAsync(entry.Key, CancellationToken.None);
+            await entry.ForwardAsync(token, forwardUri, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Updates the value of the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<byte[]> GetAsync(TKey key, CancellationToken cancellationToken)
+        {
+            return Access(key, (e, c) => GetAsyncImpl(e, c), true, cancellationToken);
+        }
+
+        async Task<byte[]> GetAsyncImpl(IKsStoreEntry<TKey> entry, CancellationToken cancellationToken)
+        {
+            var r = await entry.GetAsync(null, cancellationToken);
+            return r.Data;
+        }
+
+        /// <summary>
+        /// Updates the value of the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task SetAsync(TKey key, byte[] value, CancellationToken cancellationToken)
+        {
+            return Access(key, (e, c) => e.SetAsync(value, c), true, cancellationToken);
         }
 
     }

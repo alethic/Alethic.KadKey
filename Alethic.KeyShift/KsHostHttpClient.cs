@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,19 +26,46 @@ namespace Alethic.KeyShift
             this.uri = uri ?? throw new ArgumentNullException(nameof(uri));
         }
 
-        public async Task<byte[]> Select(TKey key, Guid? token, CancellationToken cancellationToken = default)
+        public async Task<KsHostShiftLockResult> GetAsync(TKey key, string token, CancellationToken cancellationToken = default)
         {
-            return await http.GetByteArrayAsync(new UriBuilder(uri.Combine(key.ToString())).AppendQuery("token", token).Uri);
+            // build GET request optionally with token
+            var r = new HttpRequestMessage(HttpMethod.Get, uri.Combine(key.ToString()));
+            if (token != null)
+                r.Headers.Add("KeyShift-Token", token);
+
+            // send request
+            var b = await http.SendAsync(r, cancellationToken);
+
+            // returned a not found error
+            if (b.StatusCode == HttpStatusCode.NotFound)
+                return new KsHostShiftLockResult(null, null, null);
+
+            // returned a redirect, item must already be forwarded
+            if (b.StatusCode == HttpStatusCode.Redirect)
+                return new KsHostShiftLockResult(null, null, b.Headers.Location);
+
+            // returned data and a token, item was present and is now frozen
+            if (b.StatusCode == HttpStatusCode.OK)
+            {
+                var t = b.Headers.GetValues("KeyShift-Token").FirstOrDefault();
+                if (t == null)
+                    throw new KsException("No 'KeyShift-Token' header present in host request.");
+
+                return new KsHostShiftLockResult(t, await b.Content.ReadAsByteArrayAsync(), null);
+            }
+
+            throw new KsException("Unable to handle response.");
         }
 
-        public async Task<Guid> Freeze(TKey key, Guid? token, CancellationToken cancellationToken = default)
+        public async Task ForwardAsync(TKey key, string token, Uri forward, CancellationToken cancellationToken = default)
         {
-            return Guid.Parse(await http.GetStringAsync(new UriBuilder(uri.Combine(key.ToString(), "freeze")).AppendQuery("token", token).Uri));
-        }
+            // build DELETE request optionally with token
+            var r = new HttpRequestMessage(HttpMethod.Delete, new UriBuilder(uri.Combine(key.ToString())).AppendQuery("forward", forward).Uri);
+            if (token != null)
+                r.Headers.Add("KeyShift-Token", token);
 
-        public async Task Remove(TKey key, Guid? token, Uri forward, CancellationToken cancellationToken = default)
-        {
-            await http.DeleteAsync(new UriBuilder(uri.Combine(key.ToString())).AppendQuery("token", token).AppendQuery("forward", forward.ToString()).Uri);
+            var b = await http.SendAsync(r, cancellationToken);
+            b.EnsureSuccessStatusCode();
         }
 
     }

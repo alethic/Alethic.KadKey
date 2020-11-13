@@ -1,14 +1,13 @@
-﻿
-using Cogito.Kademlia;
-
-namespace Alethic.KeyShift
+﻿namespace Alethic.KeyShift.Kademlia
 {
 
     /// <summary>
     /// Provides a hash algorithm for generating a node ID from a key.
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
-    public interface IKsHash<TKey>
+    /// <typeparam name="TNodeId"></typeparam>
+    public interface IKsKademliaHasher<TKey, TNodeId>
+        where TNodeId : unmanaged
     {
 
         /// <summary>
@@ -16,7 +15,7 @@ namespace Alethic.KeyShift
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        KNodeId256 Hash(TKey key);
+        TNodeId Hash(TKey key);
 
     }
 
