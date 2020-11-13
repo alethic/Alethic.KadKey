@@ -59,13 +59,27 @@ namespace Alethic.KeyShift.InMemory
         /// <returns></returns>
         public Task SetAsync(ReadOnlySpan<byte> value, CancellationToken cancellationToken = default)
         {
-            if (data.FreezeLockToken != null)
-                throw new KsException("Entry is currently frozen.");
-            if (data.Forward != null)
-                throw new KsException("Entry has been forwarded.");
+            return SetAsyncImpl(value.ToArray(), cancellationToken);
+        }
 
-            data.Data = value.ToArray();
-            return Task.CompletedTask;
+        /// <summary>
+        /// Saves new data associated with the entry.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        async Task SetAsyncImpl(byte[] value, CancellationToken cancellationToken = default)
+        {
+            if (data.FreezeLockToken != null)
+                await data.FreezeLockTimer;
+
+            // reset state to hosting data
+            data.FreezeLockToken = null;
+            data.FreezeLockCancel?.Cancel();
+            data.FreezeLockCancel = null;
+            data.FreezeLockTimer = null;
+            data.Forward = null;
+            data.Data = value;
         }
 
         /// <summary>
@@ -95,13 +109,13 @@ namespace Alethic.KeyShift.InMemory
         /// <param name="timeout"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<string> FreezeAsync(string token, TimeSpan timeout, CancellationToken cancellationToken = default)
+        public async Task<KsStoreFreezeResult> FreezeAsync(string token, TimeSpan timeout, CancellationToken cancellationToken = default)
         {
             if (data.FreezeLockToken != null && data.FreezeLockToken != token)
                 await data.FreezeLockTimer;
 
             if (data.Forward != null)
-                throw new KsException("Entry has been forwarded.");
+                return new KsStoreFreezeResult(null, data.Forward);
 
             // remove existing freeze
             data.FreezeLockToken = null;
@@ -115,7 +129,7 @@ namespace Alethic.KeyShift.InMemory
             data.FreezeLockCancel = new CancellationTokenSource();
             data.FreezeLockTimer = FreezeTimeoutTask(store, key, timeout, data.FreezeLockCancel.Token);
 
-            return data.FreezeLockToken;
+            return new KsStoreFreezeResult(data.FreezeLockToken, null);
         }
 
         /// <summary>

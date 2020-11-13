@@ -82,30 +82,31 @@ namespace Alethic.KeyShift
 
                 // existing token if we're resuming an operation after failure
                 var t = await entry.GetOwnerTokenAsync(cancellationToken);
+                var v = await client.ShiftLockAsync(entry.Key, t, cancellationToken);
 
-                // trace down current owner
-                var v = await client.GetAsync(entry.Key, t, cancellationToken);
-                while (v.ForwardUri != null)
+                // current owner returns no value, must not really own it, nothing to transfer
+                if (v == null)
+                    return;
+
+                // track down owner by following forwards
+                while (v.Value.ForwardUri != null)
                 {
-                    client = clients.Get(v.ForwardUri);
-                    v = await client.GetAsync(entry.Key, t, cancellationToken);
+                    client = clients.Get(v.Value.ForwardUri);
+                    v = await client.ShiftLockAsync(entry.Key, t, cancellationToken);
                 }
 
-                if (v.Data == null)
+                if (v.Value.Data == null)
                     throw new KsException("Data not retrieved.");
-                if (v.Token == null)
+                if (v.Value.Data == null)
                     throw new KsException("Data retrieved, but not token.");
 
                 // update local entry with latest information
-                await entry.SetOwnerTokenAsync(t = v.Token);
-                await entry.SetAsync(v.Data);
+                await entry.SetOwnerTokenAsync(t = v.Value.Token);
+                await entry.SetAsync(v.Value.Data);
 
-                // update DHT with new version
-                // TODO establish secondaries
-                await hashtable.AddAsync(entry.Key, new KsHashTableValue(Serialize(new KsHashTableEntry(new[] { options.Value.Uri })), value.Version + 1, TimeSpan.FromMinutes(60)));
-
-                // signal remote node to remove value and forward
-                await client.ForwardAsync(entry.Key, t, options.Value.Uri, cancellationToken);
+                // finalize shift on remote node and publish entry
+                await client.ShiftAsync(entry.Key, t, options.Value.Uri, cancellationToken);
+                await hashtable.AddAsync(entry.Key, new KsHashTableValue(Serialize(new KsHashTableEntry(new[] { options.Value.Uri })), value.Version + 1, TimeSpan.FromDays(1)));
 
                 // we succeeded, exit loop
                 break;
@@ -178,9 +179,17 @@ namespace Alethic.KeyShift
 
         async Task<KsHostShiftLockResult> ShiftLockAsyncImpl(IKsStoreEntry<TKey> entry, string token, CancellationToken cancellationToken)
         {
-            var t = await entry.FreezeAsync(token, TimeSpan.FromSeconds(5), cancellationToken);
-            var d = await entry.GetAsync(t, cancellationToken);
-            return new KsHostShiftLockResult(t, d.Data, d.ForwardUri);
+            // freeze
+            var f = await entry.FreezeAsync(token, TimeSpan.FromSeconds(5), cancellationToken);
+            if (f.ForwardUri != null)
+                return new KsHostShiftLockResult(null, null, f.ForwardUri);
+
+            // get existing value
+            var d = await entry.GetAsync(f.Token, cancellationToken);
+            if (d.ForwardUri != null)
+                return new KsHostShiftLockResult(null, null, d.ForwardUri);
+
+            return new KsHostShiftLockResult(f.Token, d.Data, null);
         }
 
         /// <summary>

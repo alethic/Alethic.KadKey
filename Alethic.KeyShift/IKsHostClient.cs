@@ -19,17 +19,17 @@ namespace Alethic.KeyShift
         /// <param name="token"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<KsHostShiftLockResult> GetAsync(TKey key, string token, CancellationToken cancellationToken = default);
+        Task<KsHostShiftLockResult?> ShiftLockAsync(TKey key, string token, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes the data from the remote client.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="token"></param>
-        /// <param name="forward"></param>
+        /// <param name="forwardUri"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task ForwardAsync(TKey key, string token, Uri forward, CancellationToken cancellationToken = default);
+        Task<KsHostShiftResult?> ShiftAsync(TKey key, string token, Uri forwardUri, CancellationToken cancellationToken = default);
 
     }
 

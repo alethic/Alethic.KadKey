@@ -26,7 +26,7 @@ namespace Alethic.KeyShift
             this.uri = uri ?? throw new ArgumentNullException(nameof(uri));
         }
 
-        public async Task<KsHostShiftLockResult> GetAsync(TKey key, string token, CancellationToken cancellationToken = default)
+        public async Task<KsHostShiftLockResult?> ShiftLockAsync(TKey key, string token, CancellationToken cancellationToken = default)
         {
             // build GET request optionally with token
             var r = new HttpRequestMessage(HttpMethod.Get, uri.Combine(key.ToString()));
@@ -38,7 +38,7 @@ namespace Alethic.KeyShift
 
             // returned a not found error
             if (b.StatusCode == HttpStatusCode.NotFound)
-                return new KsHostShiftLockResult(null, null, null);
+                return null;
 
             // returned a redirect, item must already be forwarded
             if (b.StatusCode == HttpStatusCode.Redirect)
@@ -57,15 +57,26 @@ namespace Alethic.KeyShift
             throw new KsException("Unable to handle response.");
         }
 
-        public async Task ForwardAsync(TKey key, string token, Uri forward, CancellationToken cancellationToken = default)
+        public async Task<KsHostShiftResult?> ShiftAsync(TKey key, string token, Uri forwardUri, CancellationToken cancellationToken = default)
         {
             // build DELETE request optionally with token
-            var r = new HttpRequestMessage(HttpMethod.Delete, new UriBuilder(uri.Combine(key.ToString())).AppendQuery("forward", forward).Uri);
-            if (token != null)
-                r.Headers.Add("KeyShift-Token", token);
+            var r = new HttpRequestMessage(HttpMethod.Delete, uri.Combine(key.ToString()));
+            r.Headers.Add("KeyShift-Token", token);
+            r.Headers.Add("KeyShift-ForwardUri", forwardUri.ToString());
 
             var b = await http.SendAsync(r, cancellationToken);
-            b.EnsureSuccessStatusCode();
+
+            if (b.StatusCode == HttpStatusCode.NotFound)
+                return null;
+
+            // returned a redirect, item must already be forwarded
+            if (b.StatusCode == HttpStatusCode.Redirect)
+                return new KsHostShiftResult(b.Headers.Location);
+
+            if (b.StatusCode == HttpStatusCode.OK)
+                return new KsHostShiftResult(null);
+
+            throw new KsException("Unable to handle response.");
         }
 
     }

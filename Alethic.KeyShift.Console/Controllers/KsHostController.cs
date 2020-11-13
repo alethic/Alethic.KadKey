@@ -57,13 +57,19 @@ namespace Alethic.KeyShift.Console.Controllers
         /// </summary>
         /// <param name="key"></param>
         /// <param name="token"></param>
-        /// <param name="forward"></param>
+        /// <param name="forwardUri"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("{key}")]
-        public Task ShiftAsync(string key, [FromHeader(Name = "KeyShift-Token")] string token, [FromQuery] Uri forward, CancellationToken cancellationToken)
+        public async Task<ActionResult> ShiftAsync(string key, [FromHeader(Name = "KeyShift-Token")] string token, [FromHeader(Name = "KeyShift-ForwardUri")] Uri forwardUri, CancellationToken cancellationToken)
         {
-            return host.ShiftAsync(key, token, forward, cancellationToken);
+            if (token == null)
+                return BadRequest("Missing KeyShift-Token.");
+            if (forwardUri == null)
+                return BadRequest("Missing KeyShift-ForwardUri.");
+
+            await host.ShiftAsync(key, token, forwardUri, cancellationToken);
+            return Ok();
         }
 
     }

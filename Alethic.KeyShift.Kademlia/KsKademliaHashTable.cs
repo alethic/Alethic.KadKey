@@ -41,7 +41,8 @@ namespace Alethic.KeyShift.Kademlia
         /// <returns></returns>
         public async Task<KsHashTableValue?> GetAsync(TKey key, CancellationToken cancellationToken = default)
         {
-            var v = await values.GetAsync(hasher.Hash(key), cancellationToken);
+            var h = hasher.Hash(key);
+            var v = await values.GetAsync(h, cancellationToken);
             return v != null ? new KsHashTableValue(v.Value.Data, v.Value.Version, v.Value.Expiration - DateTime.Now) : (KsHashTableValue?)null;
         }
 

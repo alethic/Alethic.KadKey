@@ -41,7 +41,7 @@ namespace Alethic.KeyShift
         /// <param name="timeout"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> FreezeAsync(string token, TimeSpan timeout, CancellationToken cancellationToken = default);
+        Task<KsStoreFreezeResult> FreezeAsync(string token, TimeSpan timeout, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Marks the entry as forwarded to another owner. Future attempts to get the data will return an error.
