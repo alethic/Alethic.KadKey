@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+        <Description>Advanced distributed Key Value Store based around a Kademlia network. This package contains middleware for implementing the KeyShift host and client APIs on ASP.Net Core.</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -10,8 +12,8 @@
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
         <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.2.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">

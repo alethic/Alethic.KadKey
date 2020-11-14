@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-        <Description>Advanced distributed Key Value Store based around a Kademlia network.</Description>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <Description>Advanced distributed Key Value Store based around a Kademlia network. This package contains a data storage backend backed by a .NET dictionary.</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
