@@ -19,7 +19,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alethic.KeyShift.InMemory",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alethic.KeyShift.Kademlia", "Alethic.KeyShift.Kademlia\Alethic.KeyShift.Kademlia.csproj", "{150C922D-3F39-44B7-9BE3-DF984FBC2167}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alethic.KeyShift.AspNetCore", "Alethic.KeyShift.AspNetCore\Alethic.KeyShift.AspNetCore.csproj", "{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alethic.KeyShift.AspNetCore", "Alethic.KeyShift.AspNetCore\Alethic.KeyShift.AspNetCore.csproj", "{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alethic.KeyShift.ServiceFabric", "Alethic.KeyShift.ServiceFabric\Alethic.KeyShift.ServiceFabric.csproj", "{54724884-3F7C-423A-B491-3647DB521D6D}"
+EndProject
+Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "Alethic.KeyShift.ServiceFabric.Sample.Fabric", "Alethic.KeyShift.ServiceFabric.Sample\Alethic.KeyShift.ServiceFabric.Sample.Fabric.sfproj", "{4F438B61-202E-45E7-89EB-DD3C212088E2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alethic.KeyShift.ServiceFabric.Sample.Service", "Alethic.KeyShift.ServiceFabric.Sample.Service\Alethic.KeyShift.ServiceFabric.Sample.Service.csproj", "{B72C7531-4334-4500-8FDA-0E2C4135693D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +53,18 @@ Global
 		{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54724884-3F7C-423A-B491-3647DB521D6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54724884-3F7C-423A-B491-3647DB521D6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54724884-3F7C-423A-B491-3647DB521D6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54724884-3F7C-423A-B491-3647DB521D6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F438B61-202E-45E7-89EB-DD3C212088E2}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{4F438B61-202E-45E7-89EB-DD3C212088E2}.Debug|Any CPU.Build.0 = Debug|x64
+		{4F438B61-202E-45E7-89EB-DD3C212088E2}.Debug|Any CPU.Deploy.0 = Debug|x64
+		{4F438B61-202E-45E7-89EB-DD3C212088E2}.Release|Any CPU.ActiveCfg = Release|x64
+		{B72C7531-4334-4500-8FDA-0E2C4135693D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B72C7531-4334-4500-8FDA-0E2C4135693D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B72C7531-4334-4500-8FDA-0E2C4135693D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B72C7531-4334-4500-8FDA-0E2C4135693D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
