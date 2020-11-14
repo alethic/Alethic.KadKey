@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
 
+using Alethic.KeyShift.AspNetCore;
+
 using Autofac.Extensions.DependencyInjection;
 
 using Cogito.Autofac;
@@ -41,10 +43,15 @@ namespace Alethic.KeyShift.Console
                 .ConfigureHostConfiguration(b => b.AddEnvironmentVariables().AddCommandLine(args))
                 .ConfigureWebHostDefaults(w => w
                     .ConfigureServices(s => s
+                        .AddKeyShiftMiddleware()
                         .AddMvc().AddControllersAsServices())
                     .Configure(c => c
                         .UseRouting()
-                        .UseEndpoints(e => e.MapControllers())))
+                        .UseEndpoints(e =>
+                        {
+                            e.MapKeyShiftHost("/host");
+                            e.MapKeyShiftKeys("/keys");
+                        })))
                 .RunConsoleAsync();
 
     }

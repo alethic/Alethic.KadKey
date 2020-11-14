@@ -2,7 +2,7 @@
     "profiles": {
         "Alethic.KeyShift.Console": {
             "commandName": "Project",
-            "commandLineArgs": "Alethic.KeyShift:Uri=http://localhost:5000/kshost",
+            "commandLineArgs": "Alethic.KeyShift:Uri=http://localhost:5000/host",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }

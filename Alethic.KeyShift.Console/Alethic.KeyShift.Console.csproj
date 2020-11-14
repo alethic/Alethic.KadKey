@@ -22,6 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Alethic.KeyShift.AspNetCore\Alethic.KeyShift.AspNetCore.csproj" />
       <ProjectReference Include="..\Alethic.KeyShift.InMemory\Alethic.KeyShift.InMemory.csproj" />
       <ProjectReference Include="..\Alethic.KeyShift.Kademlia\Alethic.KeyShift.Kademlia.csproj" />
       <ProjectReference Include="..\Alethic.KeyShift\Alethic.KeyShift.csproj" />

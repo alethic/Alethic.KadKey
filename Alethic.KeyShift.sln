@@ -15,9 +15,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alethic.KeyShift", "Alethic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alethic.KeyShift.Console", "Alethic.KeyShift.Console\Alethic.KeyShift.Console.csproj", "{F4397B95-278A-43E8-9108-00B54DD353A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alethic.KeyShift.InMemory", "Alethic.KeyShift.InMemory\Alethic.KeyShift.InMemory.csproj", "{8B0B1EF8-67F5-47D7-9D4D-2652DBC33A7C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alethic.KeyShift.InMemory", "Alethic.KeyShift.InMemory\Alethic.KeyShift.InMemory.csproj", "{8B0B1EF8-67F5-47D7-9D4D-2652DBC33A7C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alethic.KeyShift.Kademlia", "Alethic.KeyShift.Kademlia\Alethic.KeyShift.Kademlia.csproj", "{150C922D-3F39-44B7-9BE3-DF984FBC2167}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alethic.KeyShift.Kademlia", "Alethic.KeyShift.Kademlia\Alethic.KeyShift.Kademlia.csproj", "{150C922D-3F39-44B7-9BE3-DF984FBC2167}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alethic.KeyShift.AspNetCore", "Alethic.KeyShift.AspNetCore\Alethic.KeyShift.AspNetCore.csproj", "{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{150C922D-3F39-44B7-9BE3-DF984FBC2167}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{150C922D-3F39-44B7-9BE3-DF984FBC2167}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{150C922D-3F39-44B7-9BE3-DF984FBC2167}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F6D5A25-FD95-42C0-AD2D-8CED2557B2F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
