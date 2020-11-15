@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Alethic.Kademlia" Version="1.1.0-alpha0003" />
       <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
       <PackageReference Include="Cogito.Autofac" Version="3.0.7" />
       <PackageReference Include="Cogito.Autofac.DependencyInjection" Version="3.0.7" />
