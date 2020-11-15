@@ -2,8 +2,13 @@ image: Visual Studio 2019
 configuration: Release
 platform: Any CPU
 
+environment:
+  github_token:
+    secure: u7+1z/CZGBli+CiDxHSQetMjE1dbaf1f9eJtSCb8wifl7s1+AdnhWjnsjGQaEsAw
+
 install:
   - choco install gitversion.portable -y
+  - nuget sources update -Name "alethic" -UserName "wasabii" -Password %github_token%
 
 before_build:
   - ps: gitversion /l console /output buildserver
