@@ -20,6 +20,7 @@ namespace Alethic.KeyShift
         /// Initializes a new instance.
         /// </summary>
         /// <param name="http"></param>
+        /// <param name="uri"></param>
         public KsHostHttpClient(HttpClient http, Uri uri)
         {
             this.http = http ?? throw new ArgumentNullException(nameof(http));

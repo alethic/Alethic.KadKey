@@ -17,9 +17,9 @@ namespace Alethic.KeyShift
         /// Initializes a new instance.
         /// </summary>
         /// <param name="http"></param>
-        public KsHostHttpClientFactory(HttpClient http)
+        public KsHostHttpClientFactory(IHttpClientFactory http)
         {
-            this.http = http ?? throw new ArgumentNullException(nameof(http));
+            this.http = http?.CreateClient() ?? throw new ArgumentNullException(nameof(http));
         }
 
         public IKsHostClient<TKey> Get(Uri uri)

@@ -6,13 +6,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Alethic.Kademlia" Version="1.0.3" />
-      <PackageReference Include="Alethic.Kademlia.InMemory" Version="1.0.3" />
-      <PackageReference Include="Alethic.Kademlia.Protobuf" Version="1.0.3" />
+      <PackageReference Include="Alethic.Kademlia" Version="1.0.4" />
+      <PackageReference Include="Alethic.Kademlia.InMemory" Version="1.0.4" />
+      <PackageReference Include="Alethic.Kademlia.Protobuf" Version="1.0.4" />
       <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
       <PackageReference Include="Cogito.Autofac" Version="3.0.7" />
       <PackageReference Include="Cogito.Autofac.DependencyInjection" Version="3.0.7" />
-      <PackageReference Include="Cogito.Core" Version="3.1.30" />
+      <PackageReference Include="Cogito.Core" Version="3.1.35" />
       <PackageReference Include="Cogito.Extensions.Configuration.Autofac" Version="2.1.14" />
       <PackageReference Include="Cogito.Extensions.Logging.Autofac" Version="2.0.20" />
       <PackageReference Include="Cogito.Extensions.Logging.Serilog.Autofac" Version="2.0.20" />
@@ -20,7 +20,7 @@
       <PackageReference Include="Cogito.Extensions.Options.Configuration.Autofac" Version="2.0.19" />
       <PackageReference Include="Cogito.Serilog.Autofac" Version="2.0.17" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.10" />
-      <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.10" />
       <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
     </ItemGroup>
 
