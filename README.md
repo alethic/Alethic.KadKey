@@ -23,3 +23,7 @@ This shifting happens in a number of phases.
 + Node A can now access the data.
 
 This ensures during the 'shift' no other accessors can access the data on Node B, as they do not have the freeze token. They block. Once Node A completes the shift and registers himself as the owner, he instructs Node B to release the freeze and configure Node A as the forwarder. Existing requests to Node B get forwarded to Node A. New clients finding the key in the DHT find the new Entry record and consult Node A.
+
+## Kademlia
+
+KeyShift is implemented ontop of `Alethic.Kademlia`, a Very Extensible Kademlia implementation in C#. `Alethic.Kademlia` configuration is not yet completely documented. However, it supports pluggable communication and discovery protocols (UDP being the primary, with UDP multicast for discovery). Alethic.Kademlia supports Protobuf, MessagePack and JSON formatted messages. Integration of KeyShift into a solution will require configuration and potentially extension of Alethic.Kademlia.
