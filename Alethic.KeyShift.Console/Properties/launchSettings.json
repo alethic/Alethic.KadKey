@@ -1,11 +1,12 @@
 {
-    "profiles": {
-        "Alethic.KeyShift.Console": {
-            "commandName": "Project",
-            "commandLineArgs": "Alethic.KeyShift:Uri=http://localhost:5000/host",
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            }
-        }
+  "profiles": {
+    "Alethic.KeyShift.Console": {
+      "commandName": "Project",
+      "commandLineArgs": "Alethic.KeyShift:Uri=http://localhost:5000/host",
+      "environmentVariables": {
+        "ASPNETCORE_URLS": "http://localhost:5000",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
+  }
 }
