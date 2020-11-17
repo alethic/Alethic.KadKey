@@ -1,6 +1,6 @@
 # Alethic.KeyShift
 
-KeyShift is a distributed key-value store based on a Kademlia DHT.
+KeyShift is a distributed key-value store overlaid on a Kademlia DHT.
 
 When accessing a key with KeyShift, the storage is 'shifted' to the accessing client, and it becomes the primary owner. This means values are always migrated to the cluster member that uses them, and are always closest to the logic.
 
