@@ -8,7 +8,7 @@ KeyShift is appropriate for geo-distributed situations where the data is general
 
 ## Function
 
-KeyShift functions through the usage of a Kademlia DHT. The implementation is the `Alethic.Kademlia` project. The Kademlia DHT is used to publish `Entry` records for each key which contain the list of host URIs at which the values are available. When a node Sets a value into KeyShift, that key is searched for within the DHT. If an existing Entry is found, the primary nodes for that entry are contact in order to "shift" the value.
+KeyShift functions through the usage of a Kademlia DHT. The implementation is the `Alethic.Kademlia` project. The Kademlia DHT is used to publish `Entry` records for each key which contain the list of host URIs at which the values are available. When a node Gets or Sets a value into KeyShift, that key is searched for within the DHT. If an existing Entry is found, the primary nodes for that entry are contact in order to "shift" the value.
 
 This shifting happens in a number of phases.
 + Node A initiates a GET against Node B.
